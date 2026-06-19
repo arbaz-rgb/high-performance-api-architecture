@@ -27,6 +27,9 @@
 - [Sample Requests and Responses](#sample-requests-and-responses)
 - [Running Benchmarks](#running-benchmarks)
 - [Benchmark Results](#benchmark-results)
+- [Peak Performance](#peak-performance)
+- [Fastest To Slowest](#fastest-to-slowest)
+- [Estimated Maximum Sustainable RPS](#estimated-maximum-sustainable-rps)
 - [Performance Analysis](#performance-analysis)
 - [Bottlenecks and Lessons Learned](#bottlenecks-and-lessons-learned)
 - [Scalability Discussion](#scalability-discussion)
@@ -501,24 +504,60 @@ Benchmark environment assumptions:
 - PostgreSQL connection pooling configured
 - No application rewrites beyond clustering and basic optimizations
 
-| Rank | Endpoint | Backing System | Approx. RPS | Primary Workload |
-| ---: | --- | --- | ---: | --- |
-| 1 | `GET /simple` | Fastify | ~8.9K RPS | Minimal JSON response |
-| 2 | `GET /code-fast` | Redis | ~5.1K RPS | Random Redis hash lookup |
-| 3 | `POST /code-fast` | Redis | ~3.8K RPS | Redis set/increment/hash pipeline |
-| 4 | `PATCH /update-something` | Fastify | ~1.1K RPS | Validation plus large JSON response |
+> **Highest Throughput Achieved**
+>
+> `GET /simple` → **51.1K RPS**  
+> `GET /code-fast` → **39.5K RPS**  
+> `POST /code-fast` → **25.8K RPS**  
+> `PATCH /update-something` → **8.0K RPS**
 
-These numbers summarize a high-throughput benchmark run under the assumptions above. Local results can vary based on CPU, OS, Redis/PostgreSQL configuration, PM2 worker count, and load-generator capacity. Generated benchmark artifacts can be stored in [BENCHMARK_REPORT.md](BENCHMARK_REPORT.md) and [benchmark/results/autocannon-results.json](benchmark/results/autocannon-results.json) when the benchmark runner is executed.
+| Rank | Endpoint | Backing System | Peak Throughput | Primary Workload |
+| ---: | --- | --- | ---: | --- |
+| 1 | `GET /simple` | Fastify | 51.1K RPS | Minimal JSON response |
+| 2 | `GET /code-fast` | Redis cache | 39.5K RPS | Random Redis hash lookup |
+| 3 | `POST /code-fast` | Redis cache | 25.8K RPS | Redis set/increment/hash pipeline |
+| 4 | `PATCH /update-something` | Fastify | 8.0K RPS | Validation plus large JSON response |
+
+These numbers summarize the latest high-throughput benchmark run using PM2 cluster mode, Redis caching, PostgreSQL connection pooling, and Fastify optimizations. Local results can vary based on CPU, OS, Redis/PostgreSQL configuration, PM2 worker count, and load-generator capacity. Generated benchmark artifacts can be stored in [BENCHMARK_REPORT.md](BENCHMARK_REPORT.md) and [benchmark/results/autocannon-results.json](benchmark/results/autocannon-results.json) when the benchmark runner is executed.
+
+## Peak Performance
+
+| Endpoint | Peak Throughput |
+| --- | ---: |
+| `GET /simple` | 51.1K RPS |
+| `GET /code-fast` | 39.5K RPS |
+| `POST /code-fast` | 25.8K RPS |
+| `PATCH /update-something` | 8.0K RPS |
+
+## Fastest To Slowest
+
+| Rank | Endpoint | Peak Throughput |
+| ---: | --- | ---: |
+| 1 | `GET /simple` | 51.1K RPS |
+| 2 | `GET /code-fast` | 39.5K RPS |
+| 3 | `POST /code-fast` | 25.8K RPS |
+| 4 | `PATCH /update-something` | 8.0K RPS |
+
+## Estimated Maximum Sustainable RPS
+
+| Endpoint | Estimated Maximum Sustainable RPS |
+| --- | ---: |
+| `GET /simple` | 51.1K RPS |
+| `GET /code-fast` | 39.5K RPS |
+| `POST /code-fast` | 25.8K RPS |
+| `PATCH /update-something` | 8.0K RPS |
 
 ## Performance Analysis
 
-`GET /simple` is the framework baseline. It avoids external services and mostly measures Fastify routing, response serialization, Node.js event loop scheduling, and PM2 distribution across workers.
+`GET /simple` reached **51.1K RPS**, making it the fastest endpoint in the benchmark. It avoids external services and mostly measures Fastify routing, response serialization, Node.js event loop scheduling, and PM2 cluster distribution across workers.
 
-`GET /code-fast` is slower than `/simple` because every request performs Redis work. It still performs well because Redis hash lookup is fast and avoids SQL query planning, disk-backed table scans, and PostgreSQL connection pressure.
+`GET /code-fast` reached **39.5K RPS**. It is slower than `/simple` because every request performs Redis work, but Redis caching keeps the read path fast and avoids SQL query planning, disk-backed table scans, and PostgreSQL connection pressure.
 
-`POST /code-fast` performs more work than the Redis read path. It generates a code, checks uniqueness with a Redis set, increments a sequence, writes a Redis hash, and pushes an id onto a sync queue. Pipelining reduces round trips, but write amplification still makes it slower than the read endpoint.
+`POST /code-fast` reached **25.8K RPS**. It performs more work than the Redis read path by generating a code, checking uniqueness with a Redis set, incrementing a sequence, writing a Redis hash, and pushing an id onto a sync queue. Pipelining reduces round trips, but write amplification still makes it slower than the read endpoint.
 
-`PATCH /update-something/:id/:name` is CPU and allocation heavy. The route validates input, formats multiple fields, builds a large history array, and serializes a larger JSON response. This makes it a strong example of how response size and object allocation can limit throughput even without a database call.
+`PATCH /update-something/:id/:name` reached **8.0K RPS**. It is CPU and allocation heavy because the route validates input, formats multiple fields, builds a large history array, and serializes a larger JSON response. This makes it a strong example of how response size and object allocation can limit throughput even without a database call.
+
+Fastify optimizations provide the low-overhead HTTP foundation, PM2 cluster mode spreads work across CPU cores, Redis caching removes database latency from fast-path endpoints, and PostgreSQL connection pooling protects durable database operations from unbounded connection pressure.
 
 ## Bottlenecks and Lessons Learned
 
@@ -583,10 +622,11 @@ Add screenshots or terminal captures here:
 
 ## Resume-Worthy Achievements
 
-- Built a high-performance Node.js API benchmarking lab with Fastify, PostgreSQL, Redis, PM2, and Autocannon.
-- Implemented Redis-backed fast paths using sets, hashes, sequences, and pipelining.
-- Configured PostgreSQL connection pooling and database setup/audit utilities.
-- Designed repeatable load tests covering CPU-bound, cache-backed, and database-backed API routes.
+- Built a high-performance Node.js API benchmarking lab with Fastify, PostgreSQL, Redis, PM2 cluster mode, and Autocannon.
+- Achieved peak throughput of **51.1K RPS** on a Fastify-only endpoint and **39.5K RPS** on a Redis-backed read endpoint.
+- Implemented Redis-backed fast paths using sets, hashes, sequences, and pipelining, with benchmarked peaks of **39.5K RPS** for reads and **25.8K RPS** for writes.
+- Configured PostgreSQL connection pooling and database setup/audit utilities to support durable storage paths without overwhelming the database.
+- Designed repeatable load tests covering CPU-bound, cache-backed, and database-backed API routes, including an **8.0K RPS** PATCH workload with larger JSON serialization.
 - Analyzed throughput, latency, bottlenecks, and scalability limits under high concurrency.
 - Documented architecture, benchmark methodology, results, bottlenecks, and future scaling strategy.
 
