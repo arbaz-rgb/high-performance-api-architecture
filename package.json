@@ -1,0 +1,30 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node fastify.js",
+    "start:fastify": "node fastify.js",
+    "bench:simple": "autocannon -m GET --connections 20 --duration 20 --pipelining 2 --workers 6 http://localhost:3002/simple",
+    "bench:patch": "autocannon -m PATCH --connections 20 --duration 20 --pipelining 2 --workers 6 -H \"Content-Type: application/json\" -b \"{\\\"foo1\\\":\\\"test\\\",\\\"foo2\\\":\\\"test\\\",\\\"foo3\\\":\\\"test\\\",\\\"foo4\\\":\\\"test\\\",\\\"foo5\\\":\\\"test\\\",\\\"foo6\\\":\\\"test\\\",\\\"foo7\\\":\\\"test\\\",\\\"foo8\\\":\\\"test\\\",\\\"foo9\\\":\\\"test\\\",\\\"foo10\\\":\\\"test\\\"}\" \"http://localhost:3002/update-something/123/john_doe?value1=abc&value2=xyz\"",
+    "bench:all": "node benchmark/run-autocannon.js",
+    "bench:quick": "node benchmark/run-autocannon.js --quick",
+    "seed": "node database/seed.js",
+    "setup:postgres": "node database/setup.js",
+    "audit:postgres": "node database/audit.js",
+    "migrate": "node database/migrate.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "autocannon": "^8.0.0",
+    "cpeak": "^2.5.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "fastify": "^5.7.1",
+    "ioredis": "^5.9.2",
+    "pg": "^8.17.1"
+  }
+}

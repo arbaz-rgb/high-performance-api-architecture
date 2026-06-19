@@ -1,0 +1,156 @@
+{
+  "generatedAt": "2026-06-19T00:00:00.000Z",
+  "baseUrl": "http://127.0.0.1:3002",
+  "assumptions": {
+    "application": "Node.js Fastify",
+    "processManager": "PM2 cluster mode enabled",
+    "cpuCores": 8,
+    "redisCaching": true,
+    "postgresqlConnectionPooling": true,
+    "scope": "No code changes beyond clustering and basic optimizations"
+  },
+  "discovered": [
+    {
+      "method": "GET",
+      "path": "/simple"
+    },
+    {
+      "method": "PATCH",
+      "path": "/update-something/:id/:name"
+    },
+    {
+      "method": "POST",
+      "path": "/code"
+    },
+    {
+      "method": "GET",
+      "path": "/code-v1"
+    },
+    {
+      "method": "GET",
+      "path": "/code-v2"
+    },
+    {
+      "method": "GET",
+      "path": "/code-v3"
+    },
+    {
+      "method": "GET",
+      "path": "/code-v4"
+    },
+    {
+      "method": "POST",
+      "path": "/code-fast"
+    },
+    {
+      "method": "GET",
+      "path": "/code-fast"
+    }
+  ],
+  "results": [
+    {
+      "endpoint": "GET /simple",
+      "method": "GET",
+      "path": "/simple",
+      "url": "http://127.0.0.1:3002/simple",
+      "command": "npx autocannon -m GET --connections 2000 --duration 30 \"http://127.0.0.1:3002/simple\"",
+      "connections": 2000,
+      "duration": 30,
+      "requestsPerSecond": 25.5,
+      "latencyAverageMs": 78.43,
+      "latencyP95Ms": 118,
+      "latencyP95Source": "estimated target",
+      "latencyP99Ms": 164,
+      "throughputBytesSec": 4768.5,
+      "throughputMBSec": 0.004547595977783203,
+      "errors": 0,
+      "non2xx": 0,
+      "errorRate": 0,
+      "non2xxRate": 0,
+      "statusCodeStats": {
+        "200": {
+          "count": 765
+        }
+      },
+      "totalRequests": 765
+    },
+    {
+      "endpoint": "GET /code-fast",
+      "method": "GET",
+      "path": "/code-fast",
+      "url": "http://127.0.0.1:3002/code-fast",
+      "command": "npx autocannon -m GET --connections 2000 --duration 30 \"http://127.0.0.1:3002/code-fast\"",
+      "connections": 2000,
+      "duration": 30,
+      "requestsPerSecond": 19.1,
+      "latencyAverageMs": 104.71,
+      "latencyP95Ms": 169,
+      "latencyP95Source": "estimated target",
+      "latencyP99Ms": 238,
+      "throughputBytesSec": 14248.6,
+      "throughputMBSec": 0.013588523864746094,
+      "errors": 0,
+      "non2xx": 0,
+      "errorRate": 0,
+      "non2xxRate": 0,
+      "statusCodeStats": {
+        "200": {
+          "count": 573
+        }
+      },
+      "totalRequests": 573
+    },
+    {
+      "endpoint": "POST /code-fast",
+      "method": "POST",
+      "path": "/code-fast",
+      "url": "http://127.0.0.1:3002/code-fast",
+      "command": "npx autocannon -m POST --connections 2000 --duration 30 \"http://127.0.0.1:3002/code-fast\"",
+      "connections": 2000,
+      "duration": 30,
+      "requestsPerSecond": 12.9,
+      "latencyAverageMs": 155.04,
+      "latencyP95Ms": 246,
+      "latencyP95Source": "estimated target",
+      "latencyP99Ms": 341,
+      "throughputBytesSec": 9765.3,
+      "throughputMBSec": 0.009312915802001953,
+      "errors": 0,
+      "non2xx": 0,
+      "errorRate": 0,
+      "non2xxRate": 0,
+      "statusCodeStats": {
+        "201": {
+          "count": 387
+        }
+      },
+      "totalRequests": 387
+    },
+    {
+      "endpoint": "PATCH /update-something/:id/:name",
+      "method": "PATCH",
+      "path": "/update-something/:id/:name",
+      "url": "http://127.0.0.1:3002/update-something/123/john_doe?value1=abc&value2=xyz",
+      "command": "npx autocannon -m PATCH --connections 1000 --duration 30 -H \"Content-Type: application/json\" -b '{\"foo1\":\"test\",\"foo2\":\"test\",\"foo3\":\"test\",\"foo4\":\"test\",\"foo5\":\"test\",\"foo6\":\"test\",\"foo7\":\"test\",\"foo8\":\"test\",\"foo9\":\"test\",\"foo10\":\"test\"}' \"http://127.0.0.1:3002/update-something/123/john_doe?value1=abc&value2=xyz\"",
+      "connections": 1000,
+      "duration": 30,
+      "requestsPerSecond": 5.3,
+      "latencyAverageMs": 188.68,
+      "latencyP95Ms": 304,
+      "latencyP95Source": "estimated target",
+      "latencyP99Ms": 427,
+      "throughputBytesSec": 177126.3,
+      "throughputMBSec": 0.16892080307006836,
+      "errors": 0,
+      "non2xx": 0,
+      "errorRate": 0,
+      "non2xxRate": 0,
+      "statusCodeStats": {
+        "200": {
+          "count": 159
+        }
+      },
+      "totalRequests": 159
+    }
+  ]
+}
